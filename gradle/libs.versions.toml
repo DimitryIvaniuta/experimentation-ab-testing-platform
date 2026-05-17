@@ -1,0 +1,9 @@
+[versions]
+spring-boot = "4.0.6"
+lombok = "1.18.46"
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+
+[libraries]
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
