@@ -1,0 +1,120 @@
+{
+  "info": {
+    "name": "AB Testing Platform",
+    "description": "Postman collection for deterministic assignments, exposure tracking, custom events, and metrics aggregation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "adminToken",
+      "value": "local-admin-token"
+    },
+    {
+      "key": "userId",
+      "value": "user-123"
+    },
+    {
+      "key": "experimentKey",
+      "value": "checkout_button_color"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/actuator/health"
+      }
+    },
+    {
+      "name": "Get seeded experiment",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/experiments/{{experimentKey}}"
+      }
+    },
+    {
+      "name": "Create experiment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Admin-Token",
+            "value": "{{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/experiments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"key\": \"homepage_hero_copy\",\n  \"name\": \"Homepage Hero Copy\",\n  \"enabled\": true,\n  \"trafficAllocationBp\": 10000,\n  \"variants\": [\n    {\n      \"key\": \"control\",\n      \"weight\": 5000,\n      \"payload\": {\n        \"headline\": \"Build faster\"\n      }\n    },\n    {\n      \"key\": \"variant_a\",\n      \"weight\": 5000,\n      \"payload\": {\n        \"headline\": \"Ship safer\"\n      }\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Get assignment and emit exposure",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-User-Id",
+            "value": "{{userId}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/flags/{{experimentKey}}/assignment"
+      }
+    },
+    {
+      "name": "Track purchase event",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/events",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"experimentKey\": \"checkout_button_color\",\n  \"userId\": \"user-123\",\n  \"eventName\": \"purchase\",\n  \"value\": 19.99,\n  \"metadata\": {\n    \"currency\": \"EUR\",\n    \"source\": \"postman\"\n  }\n}"
+        }
+      }
+    },
+    {
+      "name": "Get metrics",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/metrics/{{experimentKey}}"
+      }
+    },
+    {
+      "name": "Get metrics summary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/metrics/{{experimentKey}}/summary",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "metrics",
+            "{{experimentKey}}",
+            "summary"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+plugins {
+    alias(libs.plugins.spring.boot)
+    id 'java'
+    id 'jacoco'
+}
+
+group = 'com.github.dimitryivaniuta'
+version = '1.0.0'
+
+description = 'Production-grade simple experimentation and A/B testing platform with deterministic assignment, exposure events, and per-variant metrics.'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    testCompileOnly {
+        extendsFrom testAnnotationProcessor
+    }
+}
+
+dependencies {
+    implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.postgresql:r2dbc-postgresql'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:testcontainers'
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-parameters', '-Xlint:deprecation', '-Xlint:unchecked']
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+javadoc {
+    options.encoding = 'UTF-8'
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
